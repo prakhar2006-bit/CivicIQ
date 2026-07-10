@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../lib/api';
+import { api, API_BASE } from '../lib/api';
 import { Landmark, FilePlus, ClipboardCheck, ArrowRight, UploadCloud, Compass, MapPin, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -426,7 +426,7 @@ export default function CitizenReport() {
                     }}
                   >
                     <img
-                      src={`http://localhost:8000/seed-images/${img}`}
+                      src={`${API_BASE}/seed-images/${img}`}
                       alt={img}
                       style={{ width: '100%', height: 90, objectFit: 'cover' }}
                     />

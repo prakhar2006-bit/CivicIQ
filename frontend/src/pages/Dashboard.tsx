@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { api } from '../lib/api';
+import { api, API_BASE } from '../lib/api';
 import type { DashboardStats, IncidentContext, CivicReport } from '../lib/api';
 import StatCards from '../components/StatCards';
 import AgentPipeline, { buildPipelineStages } from '../components/AgentPipeline';
@@ -384,8 +384,8 @@ export default function Dashboard() {
                     }}>
                       <img
                         src={p.image_filename.startsWith('report_') 
-                          ? `http://localhost:8000/uploads/reports/${p.image_filename}` 
-                          : `http://localhost:8000/seed-images/${p.image_filename}`}
+                          ? `${API_BASE}/uploads/reports/${p.image_filename}` 
+                          : `${API_BASE}/seed-images/${p.image_filename}`}
                         alt={p.report_id}
                         style={{ width: '100%', height: 70, objectFit: 'cover' }}
                         onError={(e) => {

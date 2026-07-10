@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8000';
+export const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
 
 export interface Location {
   latitude: number;
@@ -171,7 +171,7 @@ export const api = {
     if (data.image_filename) formData.append('image_filename', data.image_filename);
     if (data.image_file) formData.append('image', data.image_file);
 
-    return fetch('http://localhost:8000/reports', {
+    return fetch(`${API_BASE}/reports`, {
       method: 'POST',
       body: formData,
     }).then(async (res) => {

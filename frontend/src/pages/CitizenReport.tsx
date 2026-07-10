@@ -28,7 +28,6 @@ export default function CitizenReport() {
   const [locationName, setLocationName] = useState('');
   const [latitude, setLatitude] = useState<string>('');
   const [longitude, setLongitude] = useState<string>('');
-  const [geolocating, setGeolocating] = useState(false);
   const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle');
 
   const [submitting, setSubmitting] = useState(false);
@@ -113,19 +112,16 @@ export default function CitizenReport() {
       alert('Geolocation is not supported by your browser');
       return;
     }
-    setGeolocating(true);
     setLocationStatus('detecting');
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setLatitude(String(position.coords.latitude.toFixed(6)));
         setLongitude(String(position.coords.longitude.toFixed(6)));
         setLocationName('Current Location');
-        setGeolocating(false);
         setLocationStatus('success');
       },
       (error) => {
         console.error(error);
-        setGeolocating(false);
         setLocationStatus('denied');
       },
       { enableHighAccuracy: true, timeout: 10000 }

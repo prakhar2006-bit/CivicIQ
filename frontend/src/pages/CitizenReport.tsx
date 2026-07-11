@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api, API_BASE } from '../lib/api';
 import { Landmark, FilePlus, ClipboardCheck, ArrowRight, UploadCloud, Compass, MapPin, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -29,6 +29,9 @@ export default function CitizenReport() {
   const [latitude, setLatitude] = useState<string>('');
   const [longitude, setLongitude] = useState<string>('');
   const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle');
+  
+  const mapRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [submittedReport, setSubmittedReport] = useState<any>(null);
@@ -92,6 +95,73 @@ export default function CitizenReport() {
       const initialSeedImages = (res.images || []).filter((img: string) => !img.startsWith('resolved'));
       setImages(initialSeedImages);
     }).catch(console.error);
+  }, []);
+
+  // Synchronize Leaflet map with coordinate states
+  useEffect(() => {
+    const L = (window as any).L;
+    if (!L) return;
+
+    const latVal = parseFloat(latitude);
+    const lonVal = parseFloat(longitude);
+
+    if (isNaN(latVal) || isNaN(lonVal)) {
+      // If coordinates are cleared, remove the map
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+        markerRef.current = null;
+      }
+      return;
+    }
+
+    const container = document.getElementById('report-map');
+    if (!container) return;
+
+    // Use a premium looking custom circle marker
+    const customIcon = L.divIcon({
+      html: `<div style="
+        background-color: var(--accent-blue, #2563eb); 
+        width: 14px; 
+        height: 14px; 
+        border-radius: 50%; 
+        border: 2px solid white; 
+        box-shadow: 0 0 6px rgba(0,0,0,0.3);
+      "></div>`,
+      className: 'custom-gps-marker',
+      iconSize: [14, 14],
+      iconAnchor: [7, 7]
+    });
+
+    if (!mapRef.current) {
+      mapRef.current = L.map('report-map', {
+        zoomControl: true,
+      }).setView([latVal, lonVal], 15);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(mapRef.current);
+
+      markerRef.current = L.marker([latVal, lonVal], { icon: customIcon }).addTo(mapRef.current);
+    } else {
+      mapRef.current.setView([latVal, lonVal], 15);
+      if (markerRef.current) {
+        markerRef.current.setLatLng([latVal, lonVal]);
+      } else {
+        markerRef.current = L.marker([latVal, lonVal], { icon: customIcon }).addTo(mapRef.current);
+      }
+    }
+  }, [latitude, longitude]);
+
+  // Cleanup map on component unmount
+  useEffect(() => {
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+        markerRef.current = null;
+      }
+    };
   }, []);
 
   // Demo selection handler
@@ -575,6 +645,21 @@ export default function CitizenReport() {
                     Choose a seed image above to set geo-coordinates
                   </div>
                 )
+              )}
+
+              {/* Leaflet Map Integration */}
+              {latitude && longitude && (
+                <div 
+                  id="report-map" 
+                  style={{ 
+                    height: '200px', 
+                    width: '100%', 
+                    borderRadius: '8px', 
+                    marginTop: '12px',
+                    border: '1px solid var(--border-primary)',
+                    zIndex: 10
+                  }}
+                />
               )}
             </div>
           </div>
